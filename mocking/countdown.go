@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"io"
+	"iter"
 	"os"
 	"time"
 )
@@ -49,11 +50,21 @@ func (s *SpyTime) SetDurationSlept(duration time.Duration) {
 }
 
 func Countdown(w io.Writer, sleeper Sleeper) {
-	for i := countdownStart; i > 0; i-- {
+	for i := range countDownFrom(countdownStart) {
 		fmt.Fprintln(w, i)
 		sleeper.Sleep()
 	}
 	fmt.Fprint(w, finalWord)
+}
+
+func countDownFrom(from int) iter.Seq[int] {
+	return func(yield func(int) bool) {
+		for i := from; i > 0; i-- {
+			if !yield(i) {
+				return
+			}
+		}
+	}
 }
 
 func main() {
